@@ -5,72 +5,98 @@ import process from "node:process";
 
 const VERSION_PATTERN = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 
-const TARGETS = [
-  {
-    file: "package.json",
-    values: [
-      {
-        label: "version",
-        get: (json) => json.version,
-        set: (json, version) => {
-          json.version = version;
-        }
-      }
-    ]
-  },
-  {
-    file: "package-lock.json",
-    values: [
-      {
-        label: "version",
-        get: (json) => json.version,
-        set: (json, version) => {
-          json.version = version;
-        }
-      },
-      {
-        label: "packages[\"\"].version",
-        get: (json) => json.packages?.[""]?.version,
-        set: (json, version) => {
-          requireObject(json.packages?.[""], "package-lock.json packages[\"\"]");
-          json.packages[""].version = version;
-        }
-      }
-    ]
-  },
-  {
-    file: "plugins/codex/.claude-plugin/plugin.json",
-    values: [
-      {
-        label: "version",
-        get: (json) => json.version,
-        set: (json, version) => {
-          json.version = version;
-        }
-      }
-    ]
-  },
-  {
-    file: ".claude-plugin/marketplace.json",
-    values: [
-      {
-        label: "metadata.version",
-        get: (json) => json.metadata?.version,
-        set: (json, version) => {
-          requireObject(json.metadata, ".claude-plugin/marketplace.json metadata");
-          json.metadata.version = version;
-        }
-      },
-      {
-        label: "plugins[codex].version",
-        get: (json) => findMarketplacePlugin(json).version,
-        set: (json, version) => {
-          findMarketplacePlugin(json).version = version;
-        }
-      }
-    ]
+const MARKETPLACE_FILE = ".claude-plugin/marketplace.json";
+
+// Every plugin listed in the marketplace gets its plugin.json bumped/checked;
+// deriving the manifest paths from plugins[].source means a newly added
+// plugin cannot ship un-bumped while --check stays green.
+function pluginManifestTargets(root) {
+  const marketplace = readJson(root, MARKETPLACE_FILE);
+  const plugins = marketplace.plugins;
+  if (!Array.isArray(plugins) || plugins.length === 0) {
+    throw new Error(`Expected ${MARKETPLACE_FILE} plugins to be a non-empty array.`);
   }
-];
+
+  return plugins.map((plugin, index) => {
+    const name = typeof plugin?.name === "string" && plugin.name.length > 0 ? plugin.name : String(index);
+    const source = typeof plugin?.source === "string" && plugin.source.length > 0 ? plugin.source : null;
+    if (!source) {
+      throw new Error(`Expected ${MARKETPLACE_FILE} plugins[${name}].source to point at the plugin directory.`);
+    }
+    const normalized = source.replace(/^\.\//, "").replace(/\/+$/, "");
+    return {
+      file: `${normalized}/.claude-plugin/plugin.json`,
+      values: (json) => [versionValue(json)]
+    };
+  });
+}
+
+function buildTargets(root) {
+  return [
+    {
+      file: "package.json",
+      values: (json) => [versionValue(json)]
+    },
+    {
+      file: "package-lock.json",
+      values: (json) => [
+        versionValue(json),
+        {
+          label: "packages[\"\"].version",
+          get: () => json.packages?.[""]?.version,
+          set: (version) => {
+            requireObject(json.packages?.[""], "package-lock.json packages[\"\"]");
+            json.packages[""].version = version;
+          }
+        }
+      ]
+    },
+    ...pluginManifestTargets(root),
+    {
+      file: MARKETPLACE_FILE,
+      values: (json) => [
+        {
+          label: "metadata.version",
+          get: () => json.metadata?.version,
+          set: (version) => {
+            requireObject(json.metadata, `${MARKETPLACE_FILE} metadata`);
+            json.metadata.version = version;
+          }
+        },
+        ...marketplacePluginValues(json)
+      ]
+    }
+  ];
+}
+
+function versionValue(json) {
+  return {
+    label: "version",
+    get: () => json.version,
+    set: (version) => {
+      json.version = version;
+    }
+  };
+}
+
+function marketplacePluginValues(json) {
+  const plugins = json.plugins;
+  if (!Array.isArray(plugins) || plugins.length === 0) {
+    throw new Error(`Expected ${MARKETPLACE_FILE} plugins to be a non-empty array.`);
+  }
+
+  return plugins.map((plugin, index) => {
+    const name = typeof plugin?.name === "string" && plugin.name.length > 0 ? plugin.name : String(index);
+    return {
+      label: `plugins[${name}].version`,
+      get: () => plugin?.version,
+      set: (version) => {
+        requireObject(plugin, `.claude-plugin/marketplace.json plugins[${name}]`);
+        plugin.version = version;
+      }
+    };
+  });
+}
 
 function usage() {
   return [
@@ -131,12 +157,6 @@ function requireObject(value, label) {
   }
 }
 
-function findMarketplacePlugin(json) {
-  const plugin = json.plugins?.find((entry) => entry?.name === "codex");
-  requireObject(plugin, ".claude-plugin/marketplace.json plugins[codex]");
-  return plugin;
-}
-
 function readJson(root, file) {
   const filePath = path.join(root, file);
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -159,10 +179,10 @@ function readPackageVersion(root) {
 function checkVersions(root, expectedVersion) {
   const mismatches = [];
 
-  for (const target of TARGETS) {
+  for (const target of buildTargets(root)) {
     const json = readJson(root, target.file);
-    for (const value of target.values) {
-      const actual = value.get(json);
+    for (const value of target.values(json)) {
+      const actual = value.get();
       if (actual !== expectedVersion) {
         mismatches.push(`${target.file} ${value.label}: expected ${expectedVersion}, found ${actual ?? "<missing>"}`);
       }
@@ -175,12 +195,12 @@ function checkVersions(root, expectedVersion) {
 function bumpVersion(root, version) {
   const changedFiles = [];
 
-  for (const target of TARGETS) {
+  for (const target of buildTargets(root)) {
     const json = readJson(root, target.file);
     const before = JSON.stringify(json);
 
-    for (const value of target.values) {
-      value.set(json, version);
+    for (const value of target.values(json)) {
+      value.set(version);
     }
 
     if (JSON.stringify(json) !== before) {

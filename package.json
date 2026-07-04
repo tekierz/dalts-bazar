@@ -1,9 +1,9 @@
 {
-  "name": "@openai/codex-plugin-cc",
+  "name": "cursor-cli-plugin-cc",
   "version": "1.0.5",
   "private": true,
   "type": "module",
-  "description": "Use Codex from Claude Code to review code or delegate tasks.",
+  "description": "Claude Code plugins that delegate reviews and tasks to the Cursor CLI (cursor-agent) or Codex.",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=18.18.0"

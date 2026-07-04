@@ -1,0 +1,8 @@
+{
+  "name": "cursor",
+  "version": "1.0.5",
+  "description": "Use Cursor Agent from Claude Code to review code or delegate tasks.",
+  "author": {
+    "name": "tekierz"
+  }
+}
