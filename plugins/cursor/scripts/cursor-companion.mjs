@@ -65,7 +65,7 @@ const DEFAULT_STATUS_WAIT_TIMEOUT_MS = 240000;
 const DEFAULT_STATUS_POLL_INTERVAL_MS = 2000;
 const MODEL_ALIASES = new Map();
 const EFFORT_FLAG_ERROR =
-  "Cursor has no --effort flag. Effort is encoded in the model id (e.g. gpt-5.3-codex-high) or bracket parameters (e.g. --model 'claude-opus-4-8[effort=high]').";
+  "Cursor has no --effort flag. Effort is encoded in the model id (e.g. gpt-5.6-sol-high) or bracket parameters (e.g. --model 'claude-opus-4-8[effort=high]').";
 
 const REVIEW_KINDS = {
   review: {

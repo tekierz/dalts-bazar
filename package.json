@@ -1,6 +1,6 @@
 {
   "name": "cursor-cli-plugin-cc",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "private": true,
   "type": "module",
   "description": "Claude Code plugins that delegate reviews and tasks to the Cursor CLI (cursor-agent) or Codex.",

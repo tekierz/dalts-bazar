@@ -25,6 +25,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check version metadata
+        run: npm run check-version
+
       - name: Install Codex CLI
         run: npm install -g @openai/codex
 

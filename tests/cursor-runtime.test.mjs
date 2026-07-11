@@ -231,7 +231,7 @@ test("task --write runs cursor-agent with --force and pipes the prompt via stdin
   const binDir = makeTempDir("cursor-plugin-test-");
   installFakeCursorAgent(binDir);
 
-  const result = run("node", [SCRIPT, "task", "--write", "--model", "gpt-5.3-codex-high", "fix the failing test"], {
+  const result = run("node", [SCRIPT, "task", "--write", "--model", "gpt-5.6-sol-high", "fix the failing test"], {
     cwd: repo,
     env: buildEnv(binDir)
   });
@@ -240,7 +240,7 @@ test("task --write runs cursor-agent with --force and pipes the prompt via stdin
   assert.equal(result.stdout, "Handled the requested task.\nTask prompt accepted.\n");
 
   const invocation = lastCursorRun(binDir);
-  assert.deepEqual(invocation.argv, [...BASE_RUN_ARGV, "--force", "--model", "gpt-5.3-codex-high"]);
+  assert.deepEqual(invocation.argv, [...BASE_RUN_ARGV, "--force", "--model", "gpt-5.6-sol-high"]);
   assert.equal(invocation.stdinPrompt, "fix the failing test");
 });
 
@@ -275,7 +275,7 @@ test("task rejects --effort with model-id guidance", () => {
   assert.equal(result.status, 1);
   assert.equal(
     result.stderr.includes(
-      "Cursor has no --effort flag. Effort is encoded in the model id (e.g. gpt-5.3-codex-high) or bracket parameters (e.g. --model 'claude-opus-4-8[effort=high]')."
+      "Cursor has no --effort flag. Effort is encoded in the model id (e.g. gpt-5.6-sol-high) or bracket parameters (e.g. --model 'claude-opus-4-8[effort=high]')."
     ),
     true,
     result.stderr

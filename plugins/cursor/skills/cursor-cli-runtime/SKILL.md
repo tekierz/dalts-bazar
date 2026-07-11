@@ -24,7 +24,8 @@ Execution rules:
 Effort rule:
 - Never pass `--effort`. Cursor has no `--effort` flag and the helper rejects it.
 - If the user explicitly requested an effort level and named a parameterized model, use bracket syntax in `--model` (for example `--model 'claude-opus-4-8[effort=high]'`).
-- If the user requested an effort level without naming a model, choose the matching model-id variant only when one obviously exists (for example `gpt-5.3-codex-high`); otherwise omit `--model` entirely.
+- If the user requested an effort level without naming a model, choose the matching model-id variant only when one obviously exists (for example `gpt-5.6-sol-high`); otherwise omit `--model` entirely.
+- The gpt-5.6 series ships three flavors (`gpt-5.6-sol-*`, `gpt-5.6-terra-*`, `gpt-5.6-luna-*`), each with effort tiers `none`/`low`/`medium`/`high`/`xhigh`/`max` and `-fast` variants (for example `gpt-5.6-terra-xhigh-fast`). Run `cursor-agent models` when unsure what the account offers.
 
 Command selection:
 - Use exactly one `task` invocation per rescue handoff.

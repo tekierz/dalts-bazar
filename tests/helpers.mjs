@@ -4,6 +4,15 @@ import path from "node:path";
 import process from "node:process";
 import { spawnSync } from "node:child_process";
 
+// The suite is often run from inside a Claude Code session whose plugin hooks
+// export live session state. Tests (and the companion processes they spawn via
+// buildEnv) must not inherit it; each test sets these explicitly when needed.
+delete process.env.CLAUDE_PLUGIN_DATA;
+delete process.env.CODEX_COMPANION_SESSION_ID;
+delete process.env.CODEX_COMPANION_TRANSCRIPT_PATH;
+delete process.env.CURSOR_COMPANION_SESSION_ID;
+delete process.env.CURSOR_COMPANION_TRANSCRIPT_PATH;
+
 export function makeTempDir(prefix = "codex-plugin-test-") {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 }

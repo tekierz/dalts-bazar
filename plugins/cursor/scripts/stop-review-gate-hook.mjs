@@ -52,7 +52,7 @@ function filterJobsForCurrentSession(jobs, input = {}) {
 }
 
 function readGitOutput(cwd, args) {
-  const result = runCommand("git", args, { cwd, maxBuffer: GIT_OUTPUT_MAX_BUFFER });
+  const result = runCommand("git", args, { cwd, maxBuffer: GIT_OUTPUT_MAX_BUFFER, shell: false });
   if (result.error && /** @type {NodeJS.ErrnoException} */ (result.error).code === "ENOBUFS") {
     return { text: result.stdout ?? "", truncated: true };
   }

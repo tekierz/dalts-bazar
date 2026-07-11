@@ -151,7 +151,7 @@ Examples:
 /cursor:rescue investigate why the tests started failing
 /cursor:rescue fix the failing test with the smallest safe patch
 /cursor:rescue --resume apply the top fix from the last run
-/cursor:rescue --model gpt-5.3-codex-high investigate the flaky integration test
+/cursor:rescue --model gpt-5.6-sol-high investigate the flaky integration test
 /cursor:rescue --model 'claude-opus-4-8[effort=high]' redesign the retry logic
 /cursor:rescue --background investigate the regression
 ```
@@ -165,7 +165,8 @@ Ask Cursor to redesign the database connection to be more resilient.
 **Notes:**
 
 - if you do not pass `--model`, your Cursor account's default model is used.
-- there is no `--effort` flag. Effort is encoded in the model id (e.g. `gpt-5.3-codex-high`) or in bracket parameters (e.g. `--model 'claude-opus-4-8[effort=high]'`). Run `cursor-agent models` to see what's available.
+- there is no `--effort` flag. Effort is encoded in the model id (e.g. `gpt-5.6-sol-high`) or in bracket parameters (e.g. `--model 'claude-opus-4-8[effort=high]'`). Run `cursor-agent models` to see what's available.
+- the gpt-5.6 series comes in three flavors — `gpt-5.6-sol-*`, `gpt-5.6-terra-*`, `gpt-5.6-luna-*` — each with effort tiers `none`/`low`/`medium`/`high`/`xhigh`/`max` and `-fast` variants (e.g. `gpt-5.6-luna-max`, `gpt-5.6-terra-xhigh-fast`).
 - follow-up rescue requests can continue the latest Cursor chat in the repo
 
 ### `/cursor:transfer`
@@ -276,7 +277,7 @@ If you are coming from `/codex:*`, the surface is the same but the runtime is si
 headless `cursor-agent` processes instead of a persistent app server. The differences that matter:
 
 - **Read-only means plan mode.** Reviews and other read-only runs use Cursor's plan mode, which rejects all shell commands. The plugin gathers the git diff itself and hands it to the reviewer, which can still read files in your working tree.
-- **No `--effort` flag.** The Cursor CLI encodes effort in model ids (`gpt-5.3-codex-high`) or bracket parameters (`--model 'claude-opus-4-8[effort=high]'`). Passing `--effort` to `/cursor:rescue` is an error that tells you exactly this. There is also no `spark` model alias.
+- **No `--effort` flag.** The Cursor CLI encodes effort in model ids (`gpt-5.6-sol-high`) or bracket parameters (`--model 'claude-opus-4-8[effort=high]'`). Passing `--effort` to `/cursor:rescue` is an error that tells you exactly this. There is also no `spark` model alias.
 - **Transfer is create + prime.** Cursor has no external-session importer, so `/cursor:transfer` creates a new chat and primes it with a distilled transcript digest rather than importing turns natively.
 - **Cancel kills the process.** There is no turn-interrupt API; `/cursor:cancel` terminates the job's `cursor-agent` process tree.
 

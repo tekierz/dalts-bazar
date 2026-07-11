@@ -34,7 +34,7 @@ exactly. Ground truth was verified against `cursor-agent 2026.07.01-41b2de7` on 
 - Auth probe: `cursor-agent status --format json` → `{"status":"authenticated","isAuthenticated":true,...,"userInfo":{"email":...}}`, exit 0 when authed. `cursor-agent login` / `logout`; `CURSOR_API_KEY` env or `--api-key` for API-key auth.
 - `cursor-agent --version` prints e.g. `2026.07.01-41b2de7`.
 - Models: `cursor-agent models` lists `id - Display Name` lines (ANSI-colored, `(current)`
-  marker). Model ids encode effort variants (e.g. `gpt-5.3-codex-high`, `composer-2.5-fast`);
+  marker). Model ids encode effort variants (e.g. `gpt-5.6-sol-high`, `composer-2.5-fast`);
   parameterized models accept bracket overrides: `--model 'claude-opus-4-8[effort=high]'`.
   **There is no `--effort` flag.** When `--model` is omitted, the account default is used.
 - Sessions on disk: `~/.cursor/chats/<md5-of-abs-cwd>/<chat-uuid>/` (meta.json, store.db). We do
@@ -165,7 +165,7 @@ codex. Differences (pinned):
 - `task`: flags `[--background] [--write] [--resume-last|--resume|--fresh] [--model <m>]
   [--prompt-file <p>] [--json] [--cwd <d>]` + positional/stdin prompt. **`--effort` is a
   defined valueOption that always throws**:
-  `Cursor has no --effort flag. Effort is encoded in the model id (e.g. gpt-5.3-codex-high) or bracket parameters (e.g. --model 'claude-opus-4-8[effort=high]').`
+  `Cursor has no --effort flag. Effort is encoded in the model id (e.g. gpt-5.6-sol-high) or bracket parameters (e.g. --model 'claude-opus-4-8[effort=high]').`
   `MODEL_ALIASES` is empty (no spark). `--write` → `write:true`. Fresh runs have no thread
   naming step. Stop-gate runs (detected via the shared `STOP_REVIEW_TASK_MARKER` exported from
   `lib/tracked-jobs.mjs`) get job `kind: "stop-gate-review"` (label `stop-gate`) and are
