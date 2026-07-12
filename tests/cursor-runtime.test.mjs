@@ -353,6 +353,30 @@ test("task reports a failed run when cursor-agent returns an error result", () =
   assert.match(payload.rawOutput, /The run failed before completing the task\./);
 });
 
+test("task appends an actionable hint when the model requires Max Mode", () => {
+  const repo = makeRepoWithCommit();
+  const binDir = makeTempDir("cursor-plugin-test-");
+  installFakeCursorAgent(binDir, "max-mode-required");
+
+  const result = run("node", [SCRIPT, "task", "--model", "gpt-5.6-sol-high", "fix the failing test"], {
+    cwd: repo,
+    env: buildEnv(binDir)
+  });
+
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /ActionRequiredError: Max Mode Required/);
+  assert.match(result.stdout, /this Cursor account does not have Max Mode enabled/);
+  assert.match(result.stdout, /gpt-5\.3-codex-high or composer-2\.5/);
+
+  const jsonResult = run("node", [SCRIPT, "task", "--json", "--model", "gpt-5.6-sol-high", "fix the failing test"], {
+    cwd: repo,
+    env: buildEnv(binDir)
+  });
+  assert.equal(jsonResult.status, 1);
+  const payload = JSON.parse(jsonResult.stdout);
+  assert.equal(payload.maxModeRequired, true);
+});
+
 test("task surfaces stderr when cursor-agent exits without a result event", () => {
   const repo = makeRepoWithCommit();
   const binDir = makeTempDir("cursor-plugin-test-");
@@ -855,8 +879,30 @@ test("session start hook exports the session id, transcript path, and plugin dat
   assert.equal(result.status, 0, result.stderr);
   assert.equal(
     fs.readFileSync(envFile, "utf8"),
-    `export CURSOR_COMPANION_SESSION_ID='sess-current'\nexport CURSOR_COMPANION_TRANSCRIPT_PATH='${transcriptPath}'\nexport CLAUDE_PLUGIN_DATA='${pluginDataDir}'\n`
+    `export CURSOR_COMPANION_SESSION_ID='sess-current'\nexport CURSOR_COMPANION_TRANSCRIPT_PATH='${transcriptPath}'\nexport CURSOR_COMPANION_PLUGIN_DATA='${pluginDataDir}'\n`
   );
+});
+
+test("state dir prefers CURSOR_COMPANION_PLUGIN_DATA over a foreign CLAUDE_PLUGIN_DATA", () => {
+  const repo = makeRepoWithCommit();
+  const binDir = makeTempDir("cursor-plugin-test-");
+  installFakeCursorAgent(binDir);
+  const cursorDataDir = makeTempDir("cursor-plugin-test-");
+  const foreignDataDir = makeTempDir("cursor-plugin-test-");
+
+  const result = run("node", [SCRIPT, "task", "--json", "fix the failing test"], {
+    cwd: repo,
+    env: {
+      ...buildEnv(binDir),
+      CURSOR_COMPANION_PLUGIN_DATA: cursorDataDir,
+      CLAUDE_PLUGIN_DATA: foreignDataDir
+    }
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  const cursorStateEntries = fs.readdirSync(path.join(cursorDataDir, "state"));
+  assert.equal(cursorStateEntries.length, 1);
+  assert.equal(fs.existsSync(path.join(foreignDataDir, "state")), false);
 });
 
 test("session end cleans up jobs for the ending session only", async (t) => {

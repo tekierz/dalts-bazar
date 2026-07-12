@@ -73,6 +73,7 @@ all 8 commands, rescue agent, 3 skills, 2 hook scripts + hooks.json, review-outp
 | Skills | `codex-cli-runtime`, `codex-result-handling`, `gpt-5-4-prompting` | `cursor-cli-runtime`, `cursor-result-handling`, `cursor-prompting` |
 | Session env | `CODEX_COMPANION_SESSION_ID` | `CURSOR_COMPANION_SESSION_ID` |
 | Transcript env | `CODEX_COMPANION_TRANSCRIPT_PATH` | `CURSOR_COMPANION_TRANSCRIPT_PATH` |
+| Plugin data env | `CLAUDE_PLUGIN_DATA` (as exported by its hook) | `CURSOR_COMPANION_PLUGIN_DATA` (state.mjs falls back to `CLAUDE_PLUGIN_DATA`) — namespaced because both plugins' SessionStart hooks append to the same `CLAUDE_ENV_FILE`, and a shared name lets whichever hook runs last hijack the other plugin's state dir |
 | Broker env vars | `CODEX_COMPANION_APP_SERVER_*` | (none — no broker) |
 | State fallback root | `os.tmpdir()/codex-companion` | `os.tmpdir()/cursor-companion` |
 | Temp dir prefix (`fs.mjs`) | `codex-plugin-` | `cursor-plugin-` |
@@ -138,6 +139,14 @@ Additional runtime pins: the win32 spawn uses `shell: process.platform === "win3
 `terminateProcessTree` the cursor-agent child so a killed companion cannot orphan a running
 agent; `getCursorAuthStatus` probes `cursor-agent status --format json` directly and maps
 `ENOENT` to not-installed (no extra `--version` spawn).
+
+Max-Mode-gated models: many catalog models (e.g. the gpt-5.6/gpt-5.5/gpt-5.4 families,
+grok-4.5, and claude-* tiers) reject runs at turn start with `ActionRequiredError: Max Mode
+Required` on accounts without Max Mode; entitlement is not discoverable from
+`cursor-agent models`. `lib/cursor.mjs` exports `MAX_MODE_HINT` and
+`detectMaxModeHint({status, finalMessage, stderr})` (matches `/max mode required/i` on failed
+turns only); the companion appends the hint to failed task/review rendered output, sets
+`maxModeRequired` in their `--json` payloads, and appends it to the transfer priming error.
 
 No interrupt API exists: **cancel = `terminateProcessTree(job.pid)` only** (companion `cancel`
 drops the `interruptAppServerTurn` step and its log lines). No thread naming / `thread/list`
@@ -235,8 +244,10 @@ Cursor has no external-session import API, so transfer = **create + prime**:
 `${CLAUDE_PLUGIN_ROOT}/scripts/session-lifecycle-hook.mjs` / `stop-review-gate-hook.mjs`.
 
 - `session-lifecycle-hook.mjs`: SessionStart appends exports for
-  `CURSOR_COMPANION_SESSION_ID`, `CURSOR_COMPANION_TRANSCRIPT_PATH`, `CLAUDE_PLUGIN_DATA` to
-  `$CLAUDE_ENV_FILE`. SessionEnd = `cleanupSessionJobs` only (no broker teardown).
+  `CURSOR_COMPANION_SESSION_ID`, `CURSOR_COMPANION_TRANSCRIPT_PATH`, and
+  `CURSOR_COMPANION_PLUGIN_DATA` (the hook-scoped `CLAUDE_PLUGIN_DATA` value under a
+  namespaced name; see §3) to `$CLAUDE_ENV_FILE`. SessionEnd = `cleanupSessionJobs` only
+  (no broker teardown).
 - `stop-review-gate-hook.mjs`: same gating on `getConfig().stopReviewGate`, same
   `ALLOW:`/`BLOCK:` first-line contract, same 15-min timeout, spawns
   `cursor-companion.mjs task --json` with the prompt piped via **stdin** (read-only run).

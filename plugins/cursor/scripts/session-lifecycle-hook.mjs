@@ -9,7 +9,12 @@ import { SESSION_ID_ENV } from "./lib/tracked-jobs.mjs";
 import { TRANSCRIPT_PATH_ENV } from "./lib/cursor-session-transfer.mjs";
 import { resolveWorkspaceRoot } from "./lib/workspace.mjs";
 
-const PLUGIN_DATA_ENV = "CLAUDE_PLUGIN_DATA";
+// The hook process receives the plugin-scoped CLAUDE_PLUGIN_DATA from Claude Code,
+// but the shared session env file must get a namespaced variable: both the codex and
+// cursor plugins persist their data dir at SessionStart, and exporting the same
+// CLAUDE_PLUGIN_DATA name lets whichever hook runs last hijack the other plugin's state.
+const PLUGIN_DATA_SOURCE_ENV = "CLAUDE_PLUGIN_DATA";
+const PLUGIN_DATA_EXPORT_ENV = "CURSOR_COMPANION_PLUGIN_DATA";
 
 function readHookInput() {
   const raw = fs.readFileSync(0, "utf8").trim();
@@ -68,7 +73,7 @@ function cleanupSessionJobs(cwd, sessionId) {
 function handleSessionStart(input) {
   appendEnvVar(SESSION_ID_ENV, input.session_id);
   appendEnvVar(TRANSCRIPT_PATH_ENV, input.transcript_path);
-  appendEnvVar(PLUGIN_DATA_ENV, process.env[PLUGIN_DATA_ENV]);
+  appendEnvVar(PLUGIN_DATA_EXPORT_ENV, process.env[PLUGIN_DATA_SOURCE_ENV]);
 }
 
 function handleSessionEnd(input) {

@@ -218,6 +218,14 @@ function runTurn(prompt) {
     process.exit(1);
   }
 
+  if (BEHAVIOR === "max-mode-required") {
+    emitResultTurn(
+      'ActionRequiredError: Max Mode Required The model "gpt-5.6-sol-high" requires Max Mode to be enabled. Please enable Max Mode and try again.',
+      true
+    );
+    process.exit(1);
+  }
+
   emitResultTurn(payloadFor(prompt), false);
   process.exit(0);
 }

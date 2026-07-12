@@ -167,6 +167,7 @@ Ask Cursor to redesign the database connection to be more resilient.
 - if you do not pass `--model`, your Cursor account's default model is used.
 - there is no `--effort` flag. Effort is encoded in the model id (e.g. `gpt-5.6-sol-high`) or in bracket parameters (e.g. `--model 'claude-opus-4-8[effort=high]'`). Run `cursor-agent models` to see what's available.
 - the gpt-5.6 series comes in three flavors — `gpt-5.6-sol-*`, `gpt-5.6-terra-*`, `gpt-5.6-luna-*` — each with effort tiers `none`/`low`/`medium`/`high`/`xhigh`/`max` and `-fast` variants (e.g. `gpt-5.6-luna-max`, `gpt-5.6-terra-xhigh-fast`).
+- some models are gated behind Cursor's **Max Mode** (currently the gpt-5.6/gpt-5.5/gpt-5.4 families, grok-4.5, and the claude-* tiers). Without Max Mode those runs fail at turn start with `Max Mode Required` — the plugin appends a hint when this happens. `cursor-agent models` lists gated models without marking them; models that run everywhere include `gpt-5.3-codex-*`, `gpt-5.2-codex-*`, `gpt-5.1-codex-max-*`, and `composer-2.5*`.
 - follow-up rescue requests can continue the latest Cursor chat in the repo
 
 ### `/cursor:transfer`

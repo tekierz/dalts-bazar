@@ -10,6 +10,7 @@ import { parseArgs, splitRawArgumentString } from "./lib/args.mjs";
 import {
     createCursorChat,
     DEFAULT_CONTINUE_PROMPT,
+    detectMaxModeHint,
     getCursorAuthStatus,
     getCursorAvailability,
     parseStructuredOutput,
@@ -357,6 +358,11 @@ async function executeReviewRun(request) {
     status: result.status,
     failureMessage: result.stderr
   });
+  const maxModeHint = detectMaxModeHint({
+    status: result.status,
+    finalMessage: result.finalMessage,
+    stderr: result.stderr
+  });
   const payload = {
     review: reviewName,
     target,
@@ -374,19 +380,25 @@ async function executeReviewRun(request) {
     result: parsed.parsed,
     rawOutput: parsed.rawOutput,
     parseError: parsed.parseError,
+    maxModeRequired: Boolean(maxModeHint),
     usage: result.usage,
     durationMs: result.durationMs,
     rejectedToolCalls: result.rejectedToolCalls
   };
 
+  let rendered = renderReviewResult(parsed, {
+    reviewLabel: reviewName,
+    targetLabel: context.target.label
+  });
+  if (maxModeHint) {
+    rendered = `${rendered.endsWith("\n") ? rendered : `${rendered}\n`}\n${maxModeHint}\n`;
+  }
+
   return {
     exitStatus: result.status,
     threadId: result.chatId,
     payload,
-    rendered: renderReviewResult(parsed, {
-      reviewLabel: reviewName,
-      targetLabel: context.target.label
-    }),
+    rendered,
     summary: parsed.parsed?.summary ?? parsed.parseError ?? firstMeaningfulLine(result.finalMessage, `${reviewName} finished.`),
     jobTitle: `Cursor ${reviewName}`,
     jobClass: "review",
@@ -429,7 +441,12 @@ async function executeTaskRun(request) {
 
   const rawOutput = typeof result.finalMessage === "string" ? result.finalMessage : "";
   const failureMessage = result.stderr ?? "";
-  const rendered = renderTaskResult(
+  const maxModeHint = detectMaxModeHint({
+    status: result.status,
+    finalMessage: rawOutput,
+    stderr: failureMessage
+  });
+  let rendered = renderTaskResult(
     {
       rawOutput,
       failureMessage
@@ -440,10 +457,14 @@ async function executeTaskRun(request) {
       write: Boolean(request.write)
     }
   );
+  if (maxModeHint) {
+    rendered = `${rendered}\n${maxModeHint}\n`;
+  }
   const payload = {
     status: result.status,
     threadId: result.chatId,
     rawOutput,
+    maxModeRequired: Boolean(maxModeHint),
     usage: result.usage,
     durationMs: result.durationMs,
     rejectedToolCalls: result.rejectedToolCalls
@@ -581,9 +602,15 @@ async function executeTransfer(cwd, options = {}) {
   });
   if (result.status !== 0) {
     const detail = result.stderr?.trim() || firstMeaningfulLine(result.finalMessage, "") || `exit ${result.status}`;
+    const maxModeHint = detectMaxModeHint({
+      status: result.status,
+      finalMessage: result.finalMessage,
+      stderr: result.stderr
+    });
     throw new Error(
       `Failed to prime Cursor chat ${chatId} with the transferred Claude session: ${detail} ` +
-        `The chat was created but is unprimed (it has no transcript context); it can be ignored, and rerunning /cursor:transfer will create a fresh chat.`
+        `The chat was created but is unprimed (it has no transcript context); it can be ignored, and rerunning /cursor:transfer will create a fresh chat.` +
+        (maxModeHint ? ` ${maxModeHint}` : "")
     );
   }
 

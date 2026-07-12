@@ -465,6 +465,20 @@ function* iterateCandidates(trimmed) {
   yield* iterateBalancedObjectRegions(trimmed);
 }
 
+const MAX_MODE_PATTERN = /max mode required/i;
+
+export const MAX_MODE_HINT =
+  "Hint: this Cursor account does not have Max Mode enabled, and the selected model requires it. " +
+  "Retry with a model that runs without Max Mode (for example gpt-5.3-codex-high or composer-2.5; " +
+  "run `cursor-agent models` for the catalog), or enable Max Mode in Cursor settings.";
+
+export function detectMaxModeHint({ status, finalMessage, stderr } = {}) {
+  if (!status) {
+    return null;
+  }
+  return MAX_MODE_PATTERN.test(`${finalMessage ?? ""}\n${stderr ?? ""}`) ? MAX_MODE_HINT : null;
+}
+
 export function parseStructuredOutput(rawOutput, fallback = {}) {
   const text = typeof rawOutput === "string" ? rawOutput : rawOutput == null ? "" : String(rawOutput);
 

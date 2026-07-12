@@ -12,6 +12,7 @@ delete process.env.CODEX_COMPANION_SESSION_ID;
 delete process.env.CODEX_COMPANION_TRANSCRIPT_PATH;
 delete process.env.CURSOR_COMPANION_SESSION_ID;
 delete process.env.CURSOR_COMPANION_TRANSCRIPT_PATH;
+delete process.env.CURSOR_COMPANION_PLUGIN_DATA;
 
 export function makeTempDir(prefix = "codex-plugin-test-") {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));

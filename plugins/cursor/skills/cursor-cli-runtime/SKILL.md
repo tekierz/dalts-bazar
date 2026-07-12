@@ -27,6 +27,10 @@ Effort rule:
 - If the user requested an effort level without naming a model, choose the matching model-id variant only when one obviously exists (for example `gpt-5.6-sol-high`); otherwise omit `--model` entirely.
 - The gpt-5.6 series ships three flavors (`gpt-5.6-sol-*`, `gpt-5.6-terra-*`, `gpt-5.6-luna-*`), each with effort tiers `none`/`low`/`medium`/`high`/`xhigh`/`max` and `-fast` variants (for example `gpt-5.6-terra-xhigh-fast`). Run `cursor-agent models` when unsure what the account offers.
 
+Model availability:
+- Many catalog models are gated behind Cursor's Max Mode (currently the gpt-5.6, gpt-5.5, and gpt-5.4 families, grok-4.5, and the claude-* tiers). On accounts without Max Mode those runs fail at turn start with `Max Mode Required`; `cursor-agent models` does NOT reveal the gating, and the failure output includes a hint when this happens.
+- If a run fails with `Max Mode Required`, retry with a model that runs without Max Mode (for example `gpt-5.3-codex-high`, `gpt-5.2-codex-high`, `gpt-5.1-codex-max-high`, or `composer-2.5`) instead of retrying the same model.
+
 Command selection:
 - Use exactly one `task` invocation per rescue handoff.
 - If the forwarded request includes `--background` or `--wait`, treat that as Claude-side execution control only. Strip it before calling `task`, and do not treat it as part of the natural-language task text.
