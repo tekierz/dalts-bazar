@@ -34,8 +34,8 @@
         "name": "tekierz"
       },
       "source": {
-        "source": "github",
-        "repo": "tekierz/cyber-deck-ui"
+        "source": "url",
+        "url": "https://github.com/tekierz/cyber-deck-ui.git"
       }
     }
   ]
