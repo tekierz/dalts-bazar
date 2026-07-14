@@ -1,17 +1,17 @@
 {
-  "name": "cursor-cli",
+  "name": "tikiLabMarket",
   "owner": {
     "name": "tekierz"
   },
   "metadata": {
-    "description": "Codex and Cursor CLI plugins to use in Claude Code for delegation and code review.",
-    "version": "1.0.6"
+    "description": "tikiLabMarket — tekierz's collection of Claude Code plugins and skills: CLI delegation (Codex, Cursor), design languages, and more.",
+    "version": "1.1.0"
   },
   "plugins": [
     {
       "name": "codex",
       "description": "Use Codex from Claude Code to review code or delegate tasks.",
-      "version": "1.0.6",
+      "version": "1.1.0",
       "author": {
         "name": "OpenAI"
       },
@@ -20,11 +20,23 @@
     {
       "name": "cursor",
       "description": "Use Cursor Agent from Claude Code to review code or delegate tasks.",
-      "version": "1.0.6",
+      "version": "1.1.0",
       "author": {
         "name": "tekierz"
       },
       "source": "./plugins/cursor"
+    },
+    {
+      "name": "cyber-deck-ui",
+      "description": "Cyber-deck design language skill — cyberpunk / retro-future / CRT / EVA-inspired instrument-panel UI with layered translucency, anti-bento composition, and motivated motion.",
+      "version": "1.0.0",
+      "author": {
+        "name": "tekierz"
+      },
+      "source": {
+        "source": "github",
+        "repo": "tekierz/cyber-deck-ui"
+      }
     }
   ]
 }

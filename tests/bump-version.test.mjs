@@ -120,6 +120,34 @@ test("bump-version derives plugin manifests from marketplace sources", () => {
   assert.match(check.stderr, /plugins\/gemini\/\.claude-plugin\/plugin\.json version/);
 });
 
+test("bump-version leaves externally-sourced plugins alone", () => {
+  const root = makeVersionFixture();
+  const marketplacePath = path.join(root, ".claude-plugin", "marketplace.json");
+  const marketplace = readJson(marketplacePath);
+  marketplace.plugins.push({
+    name: "external",
+    version: "3.4.5",
+    source: { source: "github", repo: "someone/external-plugin" }
+  });
+  writeJson(marketplacePath, marketplace);
+
+  // Bump must not rewrite the external entry's version or look for a local
+  // plugin.json under a path derived from its object source.
+  const bump = run("node", [SCRIPT, "--root", root, "1.2.3"], {
+    cwd: ROOT
+  });
+  assert.equal(bump.status, 0, bump.stderr);
+  const bumped = readJson(marketplacePath);
+  assert.equal(bumped.plugins[2].version, "3.4.5");
+  assert.equal(bumped.metadata.version, "1.2.3");
+
+  // --check must pass with the external version differing from the train.
+  const check = run("node", [SCRIPT, "--root", root, "--check"], {
+    cwd: ROOT
+  });
+  assert.equal(check.status, 0, check.stderr);
+});
+
 test("bump-version fails loudly when a marketplace plugin has no source", () => {
   const root = makeVersionFixture();
   const marketplacePath = path.join(root, ".claude-plugin", "marketplace.json");

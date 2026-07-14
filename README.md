@@ -1,4 +1,31 @@
-# Cursor plugin for Claude Code
+# tikiLabMarket
+
+tekierz's Claude Code plugin & skill marketplace — a home for plugins and skills worth sharing:
+CLI delegation, design languages, and whatever comes next.
+
+Add the marketplace once and every plugin here is an install away:
+
+```bash
+/plugin marketplace add tekierz/tikiLabMarket
+```
+
+## Plugins
+
+| Plugin | What it does | Install |
+|--------|--------------|---------|
+| **cursor** | Use the Cursor CLI (`cursor-agent`) from Claude Code for reviews and task delegation ([docs below](#the-cursor-plugin)) | `/plugin install cursor@tikiLabMarket` |
+| **codex** | Use Codex from Claude Code for reviews and task delegation ([docs below](#the-codex-plugin)) | `/plugin install codex@tikiLabMarket` |
+| **cyber-deck-ui** | Cyber-deck design language skill — cyberpunk / retro-future / CRT / EVA instrument-panel UI ([repo](https://github.com/tekierz/cyber-deck-ui)) | `/plugin install cyber-deck-ui@tikiLabMarket` |
+
+After installing any plugin, reload:
+
+```bash
+/reload-plugins
+```
+
+---
+
+# The Cursor Plugin
 
 Use the Cursor CLI (`cursor-agent`) from inside Claude Code for code reviews or to delegate tasks
 to the Cursor agent.
@@ -27,16 +54,16 @@ too (see [The Codex Plugin](#the-codex-plugin)).
 
 ## Install
 
-Add the marketplace in Claude Code:
+Add the marketplace in Claude Code (if you haven't already):
 
 ```bash
-/plugin marketplace add tekierz/cursor-cli-plugin-cc
+/plugin marketplace add tekierz/tikiLabMarket
 ```
 
 Install the plugin:
 
 ```bash
-/plugin install cursor@cursor-cli
+/plugin install cursor@tikiLabMarket
 ```
 
 Reload plugins:
@@ -305,7 +332,7 @@ This way you can review the Cursor work or continue the work there.
 
 The original Codex plugin remains available, unchanged, in two places:
 
-- from this marketplace: `/plugin install codex@cursor-cli`
+- from this marketplace: `/plugin install codex@tikiLabMarket`
 - from upstream: `/plugin marketplace add openai/codex-plugin-cc`
 
 Its source lives in [`plugins/codex`](./plugins/codex) and is fully documented in the

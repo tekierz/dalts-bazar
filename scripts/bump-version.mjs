@@ -7,9 +7,17 @@ const VERSION_PATTERN = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z
 
 const MARKETPLACE_FILE = ".claude-plugin/marketplace.json";
 
-// Every plugin listed in the marketplace gets its plugin.json bumped/checked;
-// deriving the manifest paths from plugins[].source means a newly added
-// plugin cannot ship un-bumped while --check stays green.
+// Plugins hosted in external repos (object sources like {source: "github"})
+// version independently of this repo's release train; only local path
+// sources participate in bump/check.
+function isExternalSource(plugin) {
+  return typeof plugin?.source === "object" && plugin.source !== null;
+}
+
+// Every locally-sourced plugin listed in the marketplace gets its
+// plugin.json bumped/checked; deriving the manifest paths from
+// plugins[].source means a newly added plugin cannot ship un-bumped while
+// --check stays green.
 function pluginManifestTargets(root) {
   const marketplace = readJson(root, MARKETPLACE_FILE);
   const plugins = marketplace.plugins;
@@ -17,18 +25,20 @@ function pluginManifestTargets(root) {
     throw new Error(`Expected ${MARKETPLACE_FILE} plugins to be a non-empty array.`);
   }
 
-  return plugins.map((plugin, index) => {
-    const name = typeof plugin?.name === "string" && plugin.name.length > 0 ? plugin.name : String(index);
-    const source = typeof plugin?.source === "string" && plugin.source.length > 0 ? plugin.source : null;
-    if (!source) {
-      throw new Error(`Expected ${MARKETPLACE_FILE} plugins[${name}].source to point at the plugin directory.`);
-    }
-    const normalized = source.replace(/^\.\//, "").replace(/\/+$/, "");
-    return {
-      file: `${normalized}/.claude-plugin/plugin.json`,
-      values: (json) => [versionValue(json)]
-    };
-  });
+  return plugins
+    .filter((plugin) => !isExternalSource(plugin))
+    .map((plugin, index) => {
+      const name = typeof plugin?.name === "string" && plugin.name.length > 0 ? plugin.name : String(index);
+      const source = typeof plugin?.source === "string" && plugin.source.length > 0 ? plugin.source : null;
+      if (!source) {
+        throw new Error(`Expected ${MARKETPLACE_FILE} plugins[${name}].source to point at the plugin directory.`);
+      }
+      const normalized = source.replace(/^\.\//, "").replace(/\/+$/, "");
+      return {
+        file: `${normalized}/.claude-plugin/plugin.json`,
+        values: (json) => [versionValue(json)]
+      };
+    });
 }
 
 function buildTargets(root) {
@@ -85,17 +95,19 @@ function marketplacePluginValues(json) {
     throw new Error(`Expected ${MARKETPLACE_FILE} plugins to be a non-empty array.`);
   }
 
-  return plugins.map((plugin, index) => {
-    const name = typeof plugin?.name === "string" && plugin.name.length > 0 ? plugin.name : String(index);
-    return {
-      label: `plugins[${name}].version`,
-      get: () => plugin?.version,
-      set: (version) => {
-        requireObject(plugin, `.claude-plugin/marketplace.json plugins[${name}]`);
-        plugin.version = version;
-      }
-    };
-  });
+  return plugins
+    .filter((plugin) => !isExternalSource(plugin))
+    .map((plugin, index) => {
+      const name = typeof plugin?.name === "string" && plugin.name.length > 0 ? plugin.name : String(index);
+      return {
+        label: `plugins[${name}].version`,
+        get: () => plugin?.version,
+        set: (version) => {
+          requireObject(plugin, `.claude-plugin/marketplace.json plugins[${name}]`);
+          plugin.version = version;
+        }
+      };
+    });
 }
 
 function usage() {
