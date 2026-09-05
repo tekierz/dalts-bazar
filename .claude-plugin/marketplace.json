@@ -28,8 +28,7 @@
     },
     {
       "name": "cyber-deck-ui",
-      "description": "Cyber-deck design language skill — cyberpunk / retro-future / CRT / EVA-inspired instrument-panel UI with layered translucency, anti-bento composition, and motivated motion.",
-      "version": "1.0.0",
+      "description": "Cyber-deck design language plugin — flat-phosphor instrument-panel UI (cyberpunk / retro-future / CRT / EVA) for whole applications: off-ghost materials, voice tokens, anti-bento composition, motivated motion, plus a style pack, demo app, local annotation tool, and convert/onboard/refine skills.",
       "author": {
         "name": "tekierz"
       },
