@@ -16,6 +16,7 @@ Add the marketplace once and every plugin here is an install away:
 | **cursor** | Use the Cursor CLI (`cursor-agent`) from Claude Code for reviews and task delegation ([docs below](#the-cursor-plugin)) | `/plugin install cursor@dalts-bazar` |
 | **codex** | Use Codex from Claude Code for reviews and task delegation ([docs below](#the-codex-plugin)) | `/plugin install codex@dalts-bazar` |
 | **cyber-deck-ui** | Cyber-deck design language skill — cyberpunk / retro-future / CRT / EVA instrument-panel UI ([repo](https://github.com/tekierz/cyber-deck-ui)) | `/plugin install cyber-deck-ui@dalts-bazar` |
+| **project-buildlog** | Live build log page with a "Your tasks" panel — tick tasks, answer decisions and message the orchestrator from the page, over a signed T3 Code webhook ([repo](https://github.com/tekierz/project-buildlog)) | `/plugin install project-buildlog@dalts-bazar` |
 
 After installing any plugin, reload:
 

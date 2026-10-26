@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Dalt's Bazar — tekierz's collection of Claude Code plugins and skills: CLI delegation (Codex, Cursor), design languages, and more.",
-    "version": "1.1.0"
+    "version": "1.2.0"
   },
   "plugins": [
     {
       "name": "codex",
       "description": "Use Codex from Claude Code to review code or delegate tasks.",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "author": {
         "name": "OpenAI"
       },
@@ -20,7 +20,7 @@
     {
       "name": "cursor",
       "description": "Use Cursor Agent from Claude Code to review code or delegate tasks.",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "author": {
         "name": "tekierz"
       },
@@ -35,6 +35,17 @@
       "source": {
         "source": "url",
         "url": "https://github.com/tekierz/cyber-deck-ui.git"
+      }
+    },
+    {
+      "name": "project-buildlog",
+      "description": "Live build log page for any project, with a \"Your tasks\" panel: tick tasks, answer decisions and message the orchestrator from the page, and read its replies there. Local status server (systemd user service), task CLI, measured progress bars, HMAC-signed T3 Code webhook, hourly heartbeat and end-to-end checks.",
+      "author": {
+        "name": "tekierz"
+      },
+      "source": {
+        "source": "url",
+        "url": "https://github.com/tekierz/project-buildlog.git"
       }
     }
   ]
